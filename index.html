@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>For You 💖</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #ffd1dc, #ffe6f0);
+      font-family: 'Quicksand', Arial, sans-serif;
+    }
+
+    .card {
+      background: white;
+      width: 360px;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      color: #ff4d88;
+      font-weight: 700;
+    }
+
+    .score {
+      font-size: 14px;
+      color: #ff4d88;
+      margin-bottom: 20px;
+      display: none;
+      font-weight: 600;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: #ffb3c6;
+      transition: 0.3s;
+      font-family: 'Quicksand', Arial, sans-serif;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #ff8fab;
+    }
+
+    .big-yes {
+      font-size: 22px;
+      padding: 18px;
+      background: #ff4d88;
+      color: white;
+    }
+
+    .no {
+      position: relative;
+    }
+
+    /* POPUP */
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      width: 100vw;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .popup-box {
+      background: white;
+      padding: 25px;
+      border-radius: 18px;
+      text-align: center;
+      width: 280px;
+      animation: pop 0.3s ease;
+    }
+
+    .popup-box p {
+      font-size: 18px;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    .popup-box button {
+      background: #ff4d88;
+      color: white;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card" id="main-card">
+  <div class="score" id="score">Score: 0 / 5</div>
+  <h2 id="question"></h2>
+  <div id="options"></div>
+</div>
+
+<!-- POPUP -->
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <p id="popup-text"></p>
+    <button onclick="closePopup()">Next Question</button>
+  </div>
+</div>
+
+<script>
+  let score = 0;
+  let current = -1;
+  let pendingNext = false;
+  let stayHere = false;
+  let goToForever = false;
+
+  const questions = [
+    {
+      q: "When did we meet for the first time? 💭",
+      options: ["31st October", "3rd November", "1st November", "5th November"],
+      correct: 2,
+      rightMsg: "Nice 💖 you remember!",
+      wrongMsg: "Bhul gaye ho💔"
+    },
+    {
+      q: "When did we have our first kiss? 😳",
+      options: ["4th November", "5th November", "7th November", "9th November"],
+      correct: 3,
+      rightMsg: "Great 😘",
+      wrongMsg: "Yeh kaise bhul sakte ho💔😡"
+    },
+    {
+      q: "What do you like the most about me? 🥰",
+      options: ["My personality", "My eyes", "My face", "Everything about me"],
+      correct: 3,
+      rightMsg: "Correct answer 😌💖",
+      wrongMsg: "Just that 😕"
+    },
+    {
+      q: "Which colour suits me the best? 🎀",
+      options: ["Blue", "Pink", "Black", "You look good in everything"],
+      correct: 3,
+      rightMsg: "Obviously 😌💗",
+      wrongMsg: "Sirf iss colour mein🙄💔"
+    }
+  ];
+
+  function showIntro() {
+    document.getElementById("question").innerText =
+      "I have a few questions for you, Sourav 💕";
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    const btn = document.createElement("button");
+    btn.innerText = "Click to answer 💌";
+    btn.onclick = startQuiz;
+    optionsDiv.appendChild(btn);
+  }
+
+  function startQuiz() {
+    document.getElementById("score").style.display = "block";
+    current = 0;
+    loadQuestion();
+  }
+
+  function loadQuestion() {
+    document.getElementById("question").innerText = questions[current].q;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    questions[current].options.forEach((opt, index) => {
+      const btn = document.createElement("button");
+      btn.innerText = opt;
+      btn.onclick = () => checkAnswer(index);
+      optionsDiv.appendChild(btn);
+    });
+  }
+
+  function checkAnswer(index) {
+    const q = questions[current];
+    if (index === q.correct) {
+      score++;
+      showPopup(q.rightMsg);
+    } else {
+      showPopup(q.wrongMsg);
+    }
+    updateScore();
+    pendingNext = true;
+    stayHere = false;
+  }
+
+  function updateScore() {
+    document.getElementById("score").innerText = `Score: ${score} / 5`;
+  }
+
+  function showPopup(msg) {
+    document.getElementById("popup-text").innerText = msg;
+    document.getElementById("popup").style.display = "flex";
+  }
+
+  function closePopup() {
+    document.getElementById("popup").style.display = "none";
+
+    if (goToForever) {
+      showForeverPage();
+      return;
+    }
+
+    if (pendingNext && !stayHere) {
+      current++;
+      pendingNext = false;
+      current < questions.length ? loadQuestion() : showFinal();
+    }
+  }
+
+  function showFinal() {
+    document.getElementById("question").innerText =
+      "Will you be my Valentine, Sourav? 💘";
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    const yes = document.createElement("button");
+    yes.className = "big-yes";
+    yes.innerText = "YES ❤️";
+    yes.onclick = () => {
+      goToForever = true;
+      showPopup("Yayyy 🥳🥳 I love you 💖 Thank you for being my Valentine 💋💘");
+    };
+
+    const no = document.createElement("button");
+    no.className = "no";
+    no.innerText = "NO 💔";
+
+    no.onmouseover = () => {
+      no.style.transform =
+        `translate(${Math.random()*160 - 80}px, ${Math.random()*160 - 80}px)`;
+    };
+
+    no.onclick = () => {
+      stayHere = true;
+      showPopup("💔 Error: You can’t say NO 💔");
+    };
+
+    optionsDiv.appendChild(yes);
+    optionsDiv.appendChild(no);
+  }
+
+  function showForeverPage() {
+    document.body.innerHTML = `
+      <div class="card">
+        <h2>You are forever mine 😈💖</h2>
+        <p style="font-size:18px;font-weight:600;">
+          There is no escaping now 🔐❤️<br><br>
+          You clicked YES… and that sealed your fate 😌💕<br><br>
+          🫶♾️😘
+        </p>
+      </div>
+    `;
+  }
+
+  showIntro();
+</script>
+
+</body>
+</html>
